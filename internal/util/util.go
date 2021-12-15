@@ -1,4 +1,4 @@
-package main
+package util
 
 import (
   "bytes"
@@ -12,22 +12,20 @@ import (
   log "github.com/sirupsen/logrus"
 )
 
-const ApiUrl = "https://paste.sr.ht/api"
-
-func loadFile(path string) (string, error) {
+func LoadFile(path string) (string, error) {
   content, err := os.ReadFile(path)
   return string(content), err
 }
 
-func checkError(e error) {
+func CheckError(e error) {
   if e != nil {
     log.Fatal(e)
   }
 }
 
-func apiToken() string {
+func ApiToken() string {
   homeDir, dirErr := os.UserHomeDir()
-  checkError(dirErr)
+  CheckError(dirErr)
 
   tokenPath := homeDir + "/.config/srht/pst-token"
   token, tokenErr := os.ReadFile(tokenPath)
@@ -40,11 +38,11 @@ func apiToken() string {
   return "token " + tokenString
 }
 
-func request(method string, url string, data interface{}) string {
+func Request(method string, url string, data interface{}) string {
   jsonData, _ := json.Marshal(data)
   request, err := http.NewRequest(method, url, bytes.NewBuffer(jsonData))
   request.Header.Set("Content-Type", "application/json")
-  request.Header.Set("Authorization", apiToken())
+  request.Header.Set("Authorization", ApiToken())
   client := &http.Client{Timeout: time.Second * 10}
 
   log.WithFields(log.Fields{
@@ -54,8 +52,8 @@ func request(method string, url string, data interface{}) string {
   log.Debugf("With data: %s", string(jsonData))
 
   response, err := client.Do(request)
+  CheckError(err)
   defer response.Body.Close()
-  checkError(err)
 
   body, _ := ioutil.ReadAll(response.Body)
   log.Debugf("Server response: %s", string(body))

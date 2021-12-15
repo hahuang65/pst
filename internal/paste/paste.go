@@ -1,10 +1,14 @@
-package main
+package paste
 
 import (
   "encoding/json"
   "fmt"
   "time"
+
+  "git.sr.ht/~hwrd/pst/internal/util"
 )
+
+const ApiUrl = "https://paste.sr.ht/api"
 
 type Visibility string
 const (
@@ -30,7 +34,7 @@ type Paste struct {
   }
 }
 
-func createPaste(name string, visibility Visibility, contents string) {
+func Create(name string, visibility Visibility, contents string) {
   data := Paste{
     Visibility: visibility,
     Files: []PasteFile{{ Filename: name, Contents: contents, }},
@@ -38,8 +42,8 @@ func createPaste(name string, visibility Visibility, contents string) {
 
   var resp Paste
 
-  respString := request("POST", ApiUrl + "/pastes", data)
-  checkError(json.Unmarshal([]byte(respString), &resp))
+  respString := util.Request("POST", ApiUrl + "/pastes", data)
+  util.CheckError(json.Unmarshal([]byte(respString), &resp))
 
   fmt.Printf("https://paste.sr.ht/%s/%s\n", resp.User.CanonicalName, resp.Sha)
 }

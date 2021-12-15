@@ -5,6 +5,9 @@ import (
 	"os"
   "strings"
   
+  "git.sr.ht/~hwrd/pst/internal/cli"
+  "git.sr.ht/~hwrd/pst/internal/paste"
+  "git.sr.ht/~hwrd/pst/internal/tui"
   log "github.com/sirupsen/logrus"
 )
 
@@ -17,7 +20,7 @@ func main() {
 		showHelp        bool
     private         bool
     unlisted        bool
-    visibility      Visibility
+    visibility      paste.Visibility
 	)
 
 	flag.BoolVar(  &interactiveMode, "i", false,  "run interactively")
@@ -39,11 +42,11 @@ func main() {
   }
 
   if private {
-    visibility = Private
+    visibility = paste.Private
   } else if unlisted {
-    visibility = Unlisted
+    visibility = paste.Unlisted
   } else {
-    visibility = Public
+    visibility = paste.Public
   }
 
   switch strings.ToUpper(logLevel) {
@@ -70,9 +73,9 @@ func main() {
 
 	if interactiveMode {
     log.Debug("Starting in TUI mode")
-    startTui()
+    tui.Start()
 	} else {
     log.Debug("Starting in CLI mode")
-    startCli(name, visibility)
+    cli.Start(name, visibility)
 	}
 }

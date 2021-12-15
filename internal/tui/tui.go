@@ -1,4 +1,4 @@
-package main
+package tui
 
 import (
   "flag"
@@ -6,6 +6,7 @@ import (
 	"io/ioutil"
   "log"
 
+  "git.sr.ht/~hwrd/pst/internal/util"
 	tea "github.com/charmbracelet/bubbletea"
 )
 
@@ -19,7 +20,7 @@ type model struct {
 
 func loadFileCmd(path string) tea.Cmd {
   return func() tea.Msg {
-    content, err := loadFile(path)
+    content, err := util.LoadFile(path)
     if err != nil {
         return errorMsg{err}
     }
@@ -27,7 +28,7 @@ func loadFileCmd(path string) tea.Cmd {
   }
 }
 
-func startTui() {
+func Start() {
   // If we're in TUI mode, discard log output
   log.SetOutput(ioutil.Discard)
 
@@ -38,7 +39,7 @@ func startTui() {
 
   m.path = flag.Arg(0)
   p := tea.NewProgram(m, opts...)
-  checkError(p.Start())
+  util.CheckError(p.Start())
 }
 
 func (m model) Init() tea.Cmd {
