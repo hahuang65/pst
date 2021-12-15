@@ -1,45 +1,45 @@
 package tui
 
 import (
-  "flag"
-  "fmt"
+	"flag"
+	"fmt"
 	"io/ioutil"
-  "log"
+	"log"
 
-  "git.sr.ht/~hwrd/pst/internal/util"
+	"git.sr.ht/~hwrd/pst/internal/util"
 	tea "github.com/charmbracelet/bubbletea"
 )
 
-type errorMsg struct { err error }
+type errorMsg struct{ err error }
 type loadedFileMsg string
 type model struct {
-  content      string
-	err          error
-  path         string
+	content string
+	err     error
+	path    string
 }
 
 func loadFileCmd(path string) tea.Cmd {
-  return func() tea.Msg {
-    content, err := util.LoadFile(path)
-    if err != nil {
-        return errorMsg{err}
-    }
-    return loadedFileMsg(content)
-  }
+	return func() tea.Msg {
+		content, err := util.LoadFile(path)
+		if err != nil {
+			return errorMsg{err}
+		}
+		return loadedFileMsg(content)
+	}
 }
 
 func Start() {
-  // If we're in TUI mode, discard log output
-  log.SetOutput(ioutil.Discard)
+	// If we're in TUI mode, discard log output
+	log.SetOutput(ioutil.Discard)
 
-  var (
-    opts    []tea.ProgramOption
-    m       model
-  )
+	var (
+		opts []tea.ProgramOption
+		m    model
+	)
 
-  m.path = flag.Arg(0)
-  p := tea.NewProgram(m, opts...)
-  util.CheckError(p.Start())
+	m.path = flag.Arg(0)
+	p := tea.NewProgram(m, opts...)
+	util.CheckError(p.Start())
 }
 
 func (m model) Init() tea.Cmd {
@@ -63,8 +63,8 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 func (m model) View() string {
 	if m.err != nil {
-    return fmt.Sprintf("Error: %s", m.err)
-  }
-  s := "Interactive Mode:"
+		return fmt.Sprintf("Error: %s", m.err)
+	}
+	s := "Interactive Mode:"
 	return s + "\n" + m.content
 }
