@@ -13,20 +13,20 @@ import (
 
 func main() {
 	var (
-		interactiveMode bool
 		debug           bool
+		interactiveMode bool
 		logLevel        string
-		name            string
-		showHelp        bool
 		private         bool
+		showHelp        bool
 		unlisted        bool
-		visibility      paste.Visibility
 	)
+
+	var cliOpts cli.Opts
 
 	flag.BoolVar(&interactiveMode, "i", false, "run interactively, all other flags are ignored")
 	flag.BoolVar(&debug, "d", false, "shortcut for -l debug")
 	flag.BoolVar(&showHelp, "h", false, "shows this help guide")
-	flag.StringVar(&name, "n", "", "sets a name for the paste")
+	flag.StringVar(&cliOpts.Name, "n", "", "sets a name for the paste")
 	flag.StringVar(&logLevel, "l", "warn", "sets loglevel to the specified `level`")
 	flag.BoolVar(&private, "p", false, "sets visibility of the paste to private")
 	flag.BoolVar(&unlisted, "u", false, "sets visibility of the paste to unlisted")
@@ -39,14 +39,6 @@ func main() {
 
 	if debug {
 		logLevel = "DEBUG"
-	}
-
-	if private {
-		visibility = paste.Private
-	} else if unlisted {
-		visibility = paste.Unlisted
-	} else {
-		visibility = paste.Public
 	}
 
 	switch strings.ToUpper(logLevel) {
@@ -76,6 +68,17 @@ func main() {
 		tui.Start()
 	} else {
 		log.Debug("Starting in CLI mode")
-		cli.Start(name, visibility)
+
+		if private {
+			cliOpts.Visibility = paste.Private
+		} else if unlisted {
+			cliOpts.Visibility = paste.Unlisted
+		} else {
+			cliOpts.Visibility = paste.Public
+		}
+
+		cliOpts.Path = flag.Arg(0)
+
+		cli.Start(cliOpts)
 	}
 }

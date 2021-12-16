@@ -1,16 +1,19 @@
 package cli
 
 import (
-	"flag"
-
 	"git.sr.ht/~hwrd/pst/internal/paste"
 	"git.sr.ht/~hwrd/pst/internal/util"
 )
 
-func Start(name string, visibility paste.Visibility) {
-	path := flag.Arg(0)
-	content, err := util.LoadFile(path)
+type Opts struct {
+	Name       string
+	Path       string
+	Visibility paste.Visibility
+}
+
+func Start(opts Opts) {
+	content, err := util.LoadFile(opts.Path)
 	util.CheckError(err)
 
-	paste.Create(name, visibility, content)
+	paste.Create(opts.Name, opts.Visibility, content)
 }
