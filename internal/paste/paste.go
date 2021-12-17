@@ -18,17 +18,17 @@ const (
 	Private             = "private"
 )
 
-type PasteFile struct {
+type pasteFile struct {
 	Filename string `json:"filename,omitempty"`
 	BlobID   string `json:"blob_id"`
 	Contents string `json:"contents"`
 }
 
-type Paste struct {
+type paste struct {
 	CreatedAt  time.Time   `json:"created"`
 	Visibility Visibility  `json:"visibility"`
 	Sha        string      `json:"sha"`
-	Files      []PasteFile `json:"files"`
+	Files      []pasteFile `json:"files"`
 	User       struct {
 		CanonicalName string `json:"canonical_name"`
 		Name          string `json:"name"`
@@ -36,12 +36,12 @@ type Paste struct {
 }
 
 func Create(name string, visibility Visibility, contents string) {
-	data := Paste{
+	data := paste{
 		Visibility: visibility,
-		Files:      []PasteFile{{Filename: name, Contents: contents}},
+		Files:      []pasteFile{{Filename: name, Contents: contents}},
 	}
 
-	var resp Paste
+	var resp paste
 
 	respString := util.Request("POST", ApiUrl+"/pastes", data)
 	util.CheckError(json.Unmarshal([]byte(respString), &resp))

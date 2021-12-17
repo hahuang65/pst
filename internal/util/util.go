@@ -23,7 +23,7 @@ func CheckError(e error) {
 	}
 }
 
-func ApiToken() string {
+func apiToken() string {
 	homeDir, dirErr := os.UserHomeDir()
 	CheckError(dirErr)
 
@@ -42,7 +42,7 @@ func Request(method string, url string, data interface{}) string {
 	jsonData, _ := json.Marshal(data)
 	request, err := http.NewRequest(method, url, bytes.NewBuffer(jsonData))
 	request.Header.Set("Content-Type", "application/json")
-	request.Header.Set("Authorization", ApiToken())
+	request.Header.Set("Authorization", apiToken())
 	client := &http.Client{Timeout: time.Second * 10}
 
 	log.WithFields(log.Fields{
