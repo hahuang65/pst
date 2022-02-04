@@ -2,7 +2,9 @@ package main
 
 import (
 	"flag"
+	"fmt"
 	"os"
+	"path"
 	"strings"
 
 	"git.sr.ht/~hwrd/pst/internal/cli"
@@ -10,6 +12,21 @@ import (
 	"git.sr.ht/~hwrd/pst/internal/tui"
 	log "github.com/sirupsen/logrus"
 )
+
+func PrintDescription() {
+	commandName := path.Base(os.Args[0])
+
+	fmt.Fprintf(flag.CommandLine.Output(),
+		`%s is client for https://paste.sr.ht
+It can be used in 2 modes: TUI and CLI
+CLI mode strictly has functionality for creating pastes with a single file
+CLI is the default mode when any arguments and flags are passed in
+TUI mode has more functionality to list and view pastes, as well as remove pastes
+TUI mode is activated with the -i flag, or when no other flags/arguments are passed in
+
+`, commandName)
+	fmt.Fprintf(flag.CommandLine.Output(), "Usage of %s:\n", commandName)
+}
 
 func main() {
 	var (
@@ -21,9 +38,13 @@ func main() {
 		unlisted        bool
 	)
 
+	flag.Usage = func() {
+		PrintDescription()
+		flag.PrintDefaults()
+	}
 	var cliOpts cli.Opts
 
-	flag.BoolVar(&interactiveMode, "i", false, "run interactively, all other flags are ignored")
+	flag.BoolVar(&interactiveMode, "i", false, "interactive mode, automatic if no arguments/flags are passed in")
 	flag.BoolVar(&debug, "d", false, "shortcut for -l debug")
 	flag.BoolVar(&showHelp, "h", false, "shows this help guide")
 	flag.StringVar(&cliOpts.Name, "n", "", "sets a name for the paste")
@@ -61,6 +82,10 @@ func main() {
 		log.WithFields(log.Fields{
 			"logLevel": logLevel,
 		}).Warn("loglevel not recognized. Defaulting to `WARN`")
+	}
+
+	if len(os.Args[1:]) == 0 {
+		interactiveMode = true
 	}
 
 	if interactiveMode {
