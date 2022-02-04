@@ -35,6 +35,10 @@ type paste struct {
 	}
 }
 
+type listResponse struct {
+	Pastes []paste `json:"results"`
+}
+
 func Create(name string, visibility Visibility, contents string) {
 	data := paste{
 		Visibility: visibility,
@@ -47,4 +51,13 @@ func Create(name string, visibility Visibility, contents string) {
 	util.CheckError(json.Unmarshal([]byte(respString), &resp))
 
 	fmt.Printf("https://paste.sr.ht/%s/%s\n", resp.User.CanonicalName, resp.Sha)
+}
+
+func List() []paste {
+	var resp listResponse
+
+	respString := util.Request("GET", ApiUrl+"/pastes", nil)
+	util.CheckError(json.Unmarshal([]byte(respString), &resp))
+
+	return resp.Pastes
 }
