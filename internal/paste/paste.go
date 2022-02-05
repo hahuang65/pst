@@ -61,3 +61,11 @@ func List() []paste {
 
 	return resp.Pastes
 }
+
+func (p paste) URL() string {
+	return fmt.Sprintf("https://paste.sr.ht/%s/%s", p.User.CanonicalName, p.Sha)
+}
+
+func (p paste) Delete() {
+	util.Request("DELETE", ApiUrl+"/pastes/"+p.Sha, nil)
+}

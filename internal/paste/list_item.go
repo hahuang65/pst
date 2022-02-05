@@ -16,7 +16,11 @@ type ListItem struct {
 func (i ListItem) filenames() []string {
 	filenames := make([]string, len(i.paste.Files))
 	for i, v := range i.paste.Files {
-		filenames[i] = v.Filename
+		if v.Filename != "" {
+			filenames[i] = v.Filename
+		} else {
+			filenames[i] = "[UNNAMED]"
+		}
 	}
 
 	return filenames
@@ -27,11 +31,11 @@ func (i ListItem) Title() string {
 
 	switch i.paste.Visibility {
 	case Public:
-		s += " "
+		s += "  "
 	case Private:
-		s += " "
+		s += "  "
 	case Unlisted:
-		s += " "
+		s += "  "
 	}
 
 	return s + i.Name()
@@ -60,4 +64,12 @@ func ListItems(ps []paste) []list.Item {
 	}
 
 	return list_items
+}
+
+func (i ListItem) URL() string {
+	return i.paste.URL()
+}
+
+func (i ListItem) Delete() {
+	i.paste.Delete()
 }

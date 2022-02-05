@@ -1,11 +1,16 @@
 package tui
 
 import (
+	"io"
+
 	"git.sr.ht/~hwrd/pst/internal/paste"
+
+	"github.com/atotto/clipboard"
 	"github.com/charmbracelet/bubbles/key"
 	"github.com/charmbracelet/bubbles/list"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
+	"github.com/pkg/browser"
 )
 
 var (
@@ -19,11 +24,11 @@ func newItemDelegate(keys *delegateKeyMap) list.DefaultDelegate {
 
 	d.UpdateFunc = func(msg tea.Msg, m *list.Model) tea.Cmd {
 		var (
-			name string
+			pi paste.ListItem
 		)
 
 		if i, ok := m.SelectedItem().(paste.ListItem); ok {
-			name = i.Name()
+			pi = i
 		} else {
 			return nil
 		}
@@ -32,23 +37,37 @@ func newItemDelegate(keys *delegateKeyMap) list.DefaultDelegate {
 		case tea.KeyMsg:
 			switch {
 			case key.Matches(msg, keys.copy):
-				return m.NewStatusMessage(statusMessageStyle("Copied " + name))
+				clipboard.WriteAll(pi.URL())
+				return m.NewStatusMessage(statusMessageStyle("Copied URL for " + pi.Name()))
 
 			case key.Matches(msg, keys.delete):
-				return m.NewStatusMessage(statusMessageStyle("Deleted " + name))
+				pi.Delete()
+				index := m.Index()
+				m.RemoveItem(index)
+				return m.NewStatusMessage(statusMessageStyle("Deleted " + pi.Name()))
 
 			case key.Matches(msg, keys.open):
-				return m.NewStatusMessage(statusMessageStyle("Opened " + name))
+				browser.Stdout = io.Discard
+				browser.Stderr = io.Discard
+				browser.OpenURL(pi.URL())
+				return m.NewStatusMessage(statusMessageStyle("Opened " + pi.Name()))
 
 			case key.Matches(msg, keys.preview):
-				return m.NewStatusMessage(statusMessageStyle("Peeking at " + name))
+				return m.NewStatusMessage(statusMessageStyle("Peeking at " + pi.Name()))
+
+			case key.Matches(msg, keys.refresh):
+				m.SetItems(paste.ListItems(paste.List()))
+				return m.NewStatusMessage(statusMessageStyle("Refreshing paste.sr.ht"))
 			}
 		}
 
+		if len(m.Items()) == 0 {
+			keys.delete.SetEnabled(false)
+		}
 		return nil
 	}
 
-	help := []key.Binding{keys.copy, keys.delete, keys.open, keys.preview}
+	help := []key.Binding{keys.copy, keys.delete, keys.open, keys.preview, keys.refresh}
 
 	d.ShortHelpFunc = func() []key.Binding {
 		return help
@@ -66,6 +85,7 @@ type delegateKeyMap struct {
 	delete  key.Binding
 	open    key.Binding
 	preview key.Binding
+	refresh key.Binding
 }
 
 func (d delegateKeyMap) ShortHelp() []key.Binding {
@@ -74,6 +94,7 @@ func (d delegateKeyMap) ShortHelp() []key.Binding {
 		d.delete,
 		d.open,
 		d.preview,
+		d.refresh,
 	}
 }
 
@@ -84,6 +105,7 @@ func (d delegateKeyMap) FullHelp() [][]key.Binding {
 			d.delete,
 			d.open,
 			d.preview,
+			d.refresh,
 		},
 	}
 }
@@ -96,15 +118,19 @@ func newDelegateKeyMap() *delegateKeyMap {
 		),
 		delete: key.NewBinding(
 			key.WithKeys("d"),
-			key.WithHelp("d", "delete paste"),
+			key.WithHelp("d", "delete"),
 		),
 		open: key.NewBinding(
 			key.WithKeys("enter"),
-			key.WithHelp("enter", "open URL"),
+			key.WithHelp("enter", "open browser"),
 		),
 		preview: key.NewBinding(
 			key.WithKeys(" "),
-			key.WithHelp("space", "preview paste"),
+			key.WithHelp("space", "preview"),
+		),
+		refresh: key.NewBinding(
+			key.WithKeys("r"),
+			key.WithHelp("r", "refresh"),
 		),
 	}
 }
