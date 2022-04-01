@@ -20,15 +20,15 @@ type Opts struct {
 func Start(opts Opts) {
 	info, err := os.Stdin.Stat()
 	log.WithFields(log.Fields{
-		"mode":          info.Mode(),
-		"ModeNamedPipe": os.ModeNamedPipe,
-		"size":          info.Size(),
+		"mode":           info.Mode(),
+		"ModeCharDevice": os.ModeCharDevice,
+		"size":           info.Size(),
 	}).Debug("STDIN info")
 	util.CheckError(err)
 
 	var content string
 
-	if (info.Mode() & os.ModeNamedPipe) != 0 {
+	if (info.Mode() & os.ModeCharDevice) == 0 {
 		log.Debug("Receiving input from STDIN")
 		var output []rune
 		reader := bufio.NewReader(os.Stdin)
