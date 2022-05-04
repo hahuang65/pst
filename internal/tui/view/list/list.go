@@ -27,10 +27,8 @@ func New() model {
 		delegateKeys = newDelegateKeyMap()
 	)
 
-	items := paste.ListItems(paste.List())
-
 	delegate := newItemDelegate(delegateKeys)
-	pasteList := list.New(items, delegate, 0, 0)
+	pasteList := list.New([]list.Item{}, delegate, 0, 0)
 	pasteList.Title = "paste.sr.ht"
 	pasteList.Styles.Title = titleStyle
 	pasteList.StatusMessageLifetime = time.Second * 5
@@ -58,6 +56,9 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		if m.list.FilterState() == list.Filtering {
 			break
 		}
+
+	case paste.ListMsg:
+		m.list.SetItems(paste.ListItems(msg))
 	}
 
 	// This will also call our delegate's update function.

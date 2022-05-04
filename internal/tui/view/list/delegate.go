@@ -56,8 +56,10 @@ func newItemDelegate(keys *delegateKeyMap) list.DefaultDelegate {
 				return m.NewStatusMessage(statusMessageStyle("Peeking at " + pi.Name()))
 
 			case key.Matches(msg, keys.refresh):
-				m.SetItems(paste.ListItems(paste.List()))
-				return m.NewStatusMessage(statusMessageStyle("Refreshing paste.sr.ht"))
+				return tea.Batch(
+					m.NewStatusMessage(statusMessageStyle("Refreshing paste.sr.ht")),
+					paste.List,
+				)
 			}
 		}
 

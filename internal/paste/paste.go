@@ -6,11 +6,13 @@ import (
 	"time"
 
 	"git.sr.ht/~hwrd/pst/internal/util"
+	tea "github.com/charmbracelet/bubbletea"
 )
 
 const ApiUrl = "https://paste.sr.ht/api"
 
 type Visibility string
+type ListMsg []paste
 
 const (
 	Unlisted Visibility = "unlisted"
@@ -53,13 +55,13 @@ func Create(name string, visibility Visibility, contents string) {
 	fmt.Printf("https://paste.sr.ht/%s/%s\n", resp.User.CanonicalName, resp.Sha)
 }
 
-func List() []paste {
+func List() tea.Msg {
 	var resp listResponse
 
 	respString := util.Request("GET", ApiUrl+"/pastes", nil)
 	util.CheckError(json.Unmarshal([]byte(respString), &resp))
 
-	return resp.Pastes
+	return ListMsg(resp.Pastes)
 }
 
 func (p paste) URL() string {
