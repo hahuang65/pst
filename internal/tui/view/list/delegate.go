@@ -119,8 +119,8 @@ func newDelegateKeyMap() *delegateKeyMap {
 			key.WithHelp("y", "copy URL"),
 		),
 		delete: key.NewBinding(
-			key.WithKeys("d"),
-			key.WithHelp("d", "delete"),
+			key.WithKeys("D"),
+			key.WithHelp("D", "delete"),
 		),
 		open: key.NewBinding(
 			key.WithKeys("enter"),
