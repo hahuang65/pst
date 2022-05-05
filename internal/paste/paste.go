@@ -18,9 +18,17 @@ const (
 	Private             = "private"
 )
 
+// This is the structure for paste creation
 type pasteFile struct {
 	Filename string `json:"filename,omitempty"`
 	BlobID   string `json:"blob_id"`
+	Contents string `json:"contents"`
+}
+
+// This is the structure for paste loading from the API
+type PasteBlob struct {
+	Filename string // No JSON field, have to set this manually
+	ID       string `json:"sha"`
 	Contents string `json:"contents"`
 }
 
@@ -68,4 +76,19 @@ func List() []Paste {
 	util.CheckError(json.Unmarshal([]byte(respString), &resp))
 
 	return resp.Pastes
+}
+
+func (p Paste) LoadFiles() []PasteBlob {
+	files := make([]PasteBlob, len(p.Files))
+
+	for i, f := range p.Files {
+		var blob PasteBlob
+		jsonString := util.Request("GET", ApiUrl+"/blobs/"+f.BlobID, nil)
+		util.CheckError(json.Unmarshal([]byte(jsonString), &blob))
+
+		blob.Filename = f.Filename
+		files[i] = blob
+	}
+
+	return files
 }

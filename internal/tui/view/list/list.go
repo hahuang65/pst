@@ -61,15 +61,15 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		topGap, rightGap, bottomGap, leftGap := listStyle.GetPadding()
 		m.list.SetSize(msg.Width-leftGap-rightGap, msg.Height-topGap-bottomGap)
 
+	case fetchPastesMsg:
+		m.list.SetItems(itemize(msg))
+		cmds = append(cmds, view.SetView(view.List))
+
 	case tea.KeyMsg:
 		// Don't match any of the keys below if we're actively filtering.
 		if m.list.FilterState() == list.Filtering {
 			break
 		}
-
-	case fetchPastesMsg:
-		m.list.SetItems(itemize(msg))
-		cmds = append(cmds, view.SetView(view.List))
 	}
 
 	// This will also call our delegate's update function.

@@ -7,6 +7,7 @@ type View int
 const (
 	Spinner View = iota
 	List
+	Peek
 )
 
 type SetMsg View

@@ -3,6 +3,7 @@ package list
 import (
 	"io"
 
+	"git.sr.ht/~hwrd/pst/internal/tui/view/peek"
 	"github.com/atotto/clipboard"
 	"github.com/charmbracelet/bubbles/key"
 	"github.com/charmbracelet/bubbles/list"
@@ -51,7 +52,10 @@ func newItemDelegate(keys *delegateKeyMap) list.DefaultDelegate {
 				return m.NewStatusMessage(statusMessageStyle("Opened " + pi.Name()))
 
 			case key.Matches(msg, keys.preview):
-				return m.NewStatusMessage(statusMessageStyle("Peeking at " + pi.Name()))
+				return tea.Batch(
+					m.NewStatusMessage(statusMessageStyle("Peeking at "+pi.Name())),
+					peek.Peek(pi.paste),
+				)
 
 			case key.Matches(msg, keys.refresh):
 				return tea.Batch(
