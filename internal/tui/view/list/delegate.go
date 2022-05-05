@@ -3,8 +3,6 @@ package list
 import (
 	"io"
 
-	"git.sr.ht/~hwrd/pst/internal/paste"
-
 	"github.com/atotto/clipboard"
 	"github.com/charmbracelet/bubbles/key"
 	"github.com/charmbracelet/bubbles/list"
@@ -24,10 +22,10 @@ func newItemDelegate(keys *delegateKeyMap) list.DefaultDelegate {
 
 	d.UpdateFunc = func(msg tea.Msg, m *list.Model) tea.Cmd {
 		var (
-			pi paste.ListItem
+			pi item
 		)
 
-		if i, ok := m.SelectedItem().(paste.ListItem); ok {
+		if i, ok := m.SelectedItem().(item); ok {
 			pi = i
 		} else {
 			return nil
@@ -58,7 +56,7 @@ func newItemDelegate(keys *delegateKeyMap) list.DefaultDelegate {
 			case key.Matches(msg, keys.refresh):
 				return tea.Batch(
 					m.NewStatusMessage(statusMessageStyle("Refreshing paste.sr.ht")),
-					paste.List,
+					fetchPastes,
 				)
 			}
 		}

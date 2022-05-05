@@ -3,7 +3,7 @@ package tui
 import (
 	"fmt"
 
-	"git.sr.ht/~hwrd/pst/internal/paste"
+	"git.sr.ht/~hwrd/pst/internal/tui/view"
 	"git.sr.ht/~hwrd/pst/internal/tui/view/list"
 	"git.sr.ht/~hwrd/pst/internal/util"
 	"github.com/charmbracelet/bubbles/spinner"
@@ -11,17 +11,10 @@ import (
 	"github.com/charmbracelet/lipgloss"
 )
 
-type currentView int
-
-const (
-	spinnerView currentView = iota
-	listView
-)
-
 type model struct {
-	listView tea.Model
-	spinner  spinner.Model
-	view     currentView
+	listView    tea.Model
+	spinner     spinner.Model
+	currentView view.View
 }
 
 func newModel() model {
@@ -30,9 +23,9 @@ func newModel() model {
 	s.Style = lipgloss.NewStyle().Foreground(lipgloss.Color("205"))
 
 	return model{
-		listView: list.New(),
-		spinner:  s,
-		view:     spinnerView,
+		listView:    list.New(),
+		spinner:     s,
+		currentView: view.Spinner,
 	}
 }
 
@@ -49,14 +42,14 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 	switch msg := msg.(type) {
 	case spinner.TickMsg:
-		if m.view == spinnerView {
+		if m.currentView == view.Spinner {
 			newSpinner, cmd := m.spinner.Update(msg)
 			m.spinner = newSpinner
 			cmds = append(cmds, cmd)
 		}
 
-	case paste.ListMsg:
-		m.view = listView
+	case view.SetMsg:
+		m.currentView = view.View(msg)
 	}
 
 	newListView, cmd := m.listView.Update(msg)
@@ -67,7 +60,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 }
 
 func (m model) View() string {
-	if m.view == spinnerView {
+	if m.currentView == view.Spinner {
 		return fmt.Sprintf("\n\n   %s Loading pastes\n\n", m.spinner.View())
 	} else {
 		return m.listView.View()

@@ -6,13 +6,11 @@ import (
 	"time"
 
 	"git.sr.ht/~hwrd/pst/internal/util"
-	tea "github.com/charmbracelet/bubbletea"
 )
 
 const ApiUrl = "https://paste.sr.ht/api"
 
 type Visibility string
-type ListMsg []paste
 
 const (
 	Unlisted Visibility = "unlisted"
@@ -26,7 +24,7 @@ type pasteFile struct {
 	Contents string `json:"contents"`
 }
 
-type paste struct {
+type Paste struct {
 	CreatedAt  time.Time   `json:"created"`
 	Visibility Visibility  `json:"visibility"`
 	Sha        string      `json:"sha"`
@@ -37,17 +35,17 @@ type paste struct {
 	}
 }
 
-type listResponse struct {
-	Pastes []paste `json:"results"`
+type pasteList struct {
+	Pastes []Paste `json:"results"`
 }
 
 func Create(name string, visibility Visibility, contents string) {
-	data := paste{
+	data := Paste{
 		Visibility: visibility,
 		Files:      []pasteFile{{Filename: name, Contents: contents}},
 	}
 
-	var resp paste
+	var resp Paste
 
 	respString := util.Request("POST", ApiUrl+"/pastes", data)
 	util.CheckError(json.Unmarshal([]byte(respString), &resp))
@@ -55,19 +53,19 @@ func Create(name string, visibility Visibility, contents string) {
 	fmt.Printf("https://paste.sr.ht/%s/%s\n", resp.User.CanonicalName, resp.Sha)
 }
 
-func List() tea.Msg {
-	var resp listResponse
+func (p Paste) URL() string {
+	return fmt.Sprintf("https://paste.sr.ht/%s/%s", p.User.CanonicalName, p.Sha)
+}
+
+func (p Paste) Delete() {
+	util.Request("DELETE", ApiUrl+"/pastes/"+p.Sha, nil)
+}
+
+func List() []Paste {
+	var resp pasteList
 
 	respString := util.Request("GET", ApiUrl+"/pastes", nil)
 	util.CheckError(json.Unmarshal([]byte(respString), &resp))
 
-	return ListMsg(resp.Pastes)
-}
-
-func (p paste) URL() string {
-	return fmt.Sprintf("https://paste.sr.ht/%s/%s", p.User.CanonicalName, p.Sha)
-}
-
-func (p paste) Delete() {
-	util.Request("DELETE", ApiUrl+"/pastes/"+p.Sha, nil)
+	return resp.Pastes
 }
