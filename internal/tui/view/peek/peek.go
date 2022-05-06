@@ -1,11 +1,16 @@
 package peek
 
 import (
+	"bytes"
 	"fmt"
 	"strings"
 
 	"git.sr.ht/~hwrd/pst/internal/paste"
 	"git.sr.ht/~hwrd/pst/internal/tui/view"
+	"git.sr.ht/~hwrd/pst/internal/util"
+	"github.com/alecthomas/chroma/formatters"
+	"github.com/alecthomas/chroma/lexers"
+	"github.com/alecthomas/chroma/styles"
 	"github.com/charmbracelet/bubbles/viewport"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
@@ -107,7 +112,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case peekBlobMsg:
 		blob := m.contents[m.currentIndex]
 		m.headerTitle = blob.Filename
-		m.viewport.SetContent(blob.Contents)
+		m.viewport.SetContent(highlight(blob))
 		cmds = append(cmds, view.SetView(view.Peek))
 	}
 
@@ -159,4 +164,30 @@ func Peek(p paste.Paste) tea.Cmd {
 
 func peekBlob() tea.Msg {
 	return peekBlobMsg{}
+}
+
+func highlight(b paste.Blob) string {
+	lexer := lexers.Match(b.Filename)
+	if lexer == nil {
+		lexer = lexers.Fallback
+	}
+
+	style := styles.Get("dracula")
+	if style == nil {
+		style = styles.Fallback
+	}
+
+	formatter := formatters.Get("terminal256")
+	if formatter == nil {
+		formatter = formatters.Fallback
+	}
+
+	iterator, err := lexer.Tokenise(nil, string(b.Contents))
+	util.CheckError(err)
+
+	var buf bytes.Buffer
+	err = formatter.Format(&buf, style, iterator)
+	util.CheckError(err)
+
+	return buf.String()
 }

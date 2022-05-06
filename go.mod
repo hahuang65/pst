@@ -3,6 +3,7 @@ module git.sr.ht/~hwrd/pst
 go 1.16
 
 require (
+	github.com/alecthomas/chroma v0.10.0
 	github.com/atotto/clipboard v0.1.4
 	github.com/charmbracelet/bubbles v0.10.2
 	github.com/charmbracelet/bubbletea v0.19.3
