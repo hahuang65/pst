@@ -19,38 +19,38 @@ const (
 )
 
 // This is the structure for paste creation
-type pasteFile struct {
+type file struct {
 	Filename string `json:"filename,omitempty"`
 	BlobID   string `json:"blob_id"`
 	Contents string `json:"contents"`
 }
 
 // This is the structure for paste loading from the API
-type PasteBlob struct {
+type Blob struct {
 	Filename string // No JSON field, have to set this manually
 	ID       string `json:"sha"`
 	Contents string `json:"contents"`
 }
 
 type Paste struct {
-	CreatedAt  time.Time   `json:"created"`
-	Visibility Visibility  `json:"visibility"`
-	Sha        string      `json:"sha"`
-	Files      []pasteFile `json:"files"`
+	CreatedAt  time.Time  `json:"created"`
+	Visibility Visibility `json:"visibility"`
+	Sha        string     `json:"sha"`
+	Files      []file     `json:"files"`
 	User       struct {
 		CanonicalName string `json:"canonical_name"`
 		Name          string `json:"name"`
 	}
 }
 
-type pasteList struct {
+type list struct {
 	Pastes []Paste `json:"results"`
 }
 
 func Create(name string, visibility Visibility, contents string) {
 	data := Paste{
 		Visibility: visibility,
-		Files:      []pasteFile{{Filename: name, Contents: contents}},
+		Files:      []file{{Filename: name, Contents: contents}},
 	}
 
 	var resp Paste
@@ -70,7 +70,7 @@ func (p Paste) Delete() {
 }
 
 func List() []Paste {
-	var resp pasteList
+	var resp list
 
 	respString := util.Request("GET", ApiUrl+"/pastes", nil)
 	util.CheckError(json.Unmarshal([]byte(respString), &resp))
@@ -78,11 +78,11 @@ func List() []Paste {
 	return resp.Pastes
 }
 
-func (p Paste) LoadFiles() []PasteBlob {
-	files := make([]PasteBlob, len(p.Files))
+func (p Paste) LoadFiles() []Blob {
+	files := make([]Blob, len(p.Files))
 
 	for i, f := range p.Files {
-		var blob PasteBlob
+		var blob Blob
 		jsonString := util.Request("GET", ApiUrl+"/blobs/"+f.BlobID, nil)
 		util.CheckError(json.Unmarshal([]byte(jsonString), &blob))
 

@@ -28,7 +28,7 @@ var (
 )
 
 type model struct {
-	contents     []paste.PasteBlob
+	contents     []paste.Blob
 	currentIndex int
 	headerTitle  string
 	ready        bool
@@ -36,7 +36,7 @@ type model struct {
 }
 
 type peekBlobMsg struct{}
-type peekPasteMsg []paste.PasteBlob
+type peekPasteMsg []paste.Blob
 
 func (m model) Init() tea.Cmd {
 	return nil
